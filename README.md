@@ -9,3 +9,20 @@ Follow from https://github.com/open-ephys/open-ephys-python-tools
 $ pip install open-ephys-python-tools
 `
 
+## Usage
+```
+directory = 'location/of/neuropix/data'
+
+from src.npa.utils import *
+
+# getting lfp data
+lfp = get_lfp_data(directory)
+lfp_samples = lfp.samples
+lfp_metadata = lfp.metadata
+
+# getting action potential data
+ap = get_spike_data(directory)
+ap_samples = ap.samples
+ap_metadata = ap.metadata
+
+```
