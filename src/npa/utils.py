@@ -1,4 +1,5 @@
 from open_ephys.analysis import Session
+import numpy as np
 
 def load_data(directory, node_idx: int = 0, rec_idx: int = 0):
     '''
@@ -37,3 +38,12 @@ def get_lfp_data(directory, node_idx: int = 0, rec_idx: int = 0):
 def convert_samples(data):
     data = data.get_samples(start_sample_index = 0, end_sample_index = data.samples.shape[0])
     return data
+
+def get_channel_map(probe = '1_3A'):
+    probe_dir = 'probes/NP' + probe + '/'
+    chan_map = np.load(probe_dir + 'channel_map.npy')  # channel mapping
+    return chan_map
+def get_channel_locs(probe = '1_3A'):
+    probe_dir = 'probes/NP'+probe+'/'
+    chan_loc = np.load(probe_dir + 'channel_positions.npy')  # physical channel locations
+    return chan_loc

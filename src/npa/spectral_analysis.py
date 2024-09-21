@@ -34,11 +34,18 @@ def psd(data, channels, fpass = [0.1, 150.0], plot_on = True):
         f, pxx = signal.welch(filt_data, dfs, nperseg = win)
         chan_pxx.append(pxx)
     if plot_on:
-        fig, ax = plt.subplots(nrows=len(channels))
-        for chan in channels:
-            ax[chan].semilogy(f,chan_pxx[chan], color = 'black', linewidth = 2)
-            ax[chan].set_title('Channel {} Power Spectral Density'.format(chan+1))
-            ax[chan].set_ylabel('PSD [V**2/Hz]')
-            ax[chan].set_xlabel('Frequency (Hz)')
+        if len(channels) > 1:
+            fig, ax = plt.subplots(nrows=len(channels))
+            for i,chan in enumerate(channels):
+                ax[i].semilogy(f,chan_pxx[chan], color = 'black', linewidth = 2)
+                ax[i].set_title('Channel {} Power Spectral Density'.format(chan+1))
+                ax[i].set_ylabel('PSD [V**2/Hz]')
+                ax[i].set_xlabel('Frequency (Hz)')
+        else:
+            fig, ax = plt.subplots()
+            ax.semilogy(f,chan_pxx[channels[0]],color = 'black', linewidth = 2)
+            ax.set_title('Channel {} Power Spectral Density'.format(chanel[0] + 1))
+            ax.set_ylabel('PSD [V**2/Hz]')
+            ax.set_xlabel('Frequency (Hz)')
         plt.show()
     return f, chan_pxx

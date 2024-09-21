@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import utils
-
+import numpy as np
+import spectral_analysis as spec
 
 def plot_channels(data, channels, fontsize=8, layout='compressed'):
     '''
@@ -23,4 +24,67 @@ def plot_channels(data, channels, fontsize=8, layout='compressed'):
         ax[chan].set_ylabel('uV', fontsize=fontsize)
         ax[chan].set_xlabel('Time (s)', fontsize=fontsize)
     fig.tight_layout()
+    plt.show()
+
+def plot_probe_rms(data, probe='1_3A', probe_region=None):
+    '''
+
+    :param data:
+    :param probe:
+    :return:
+    '''
+    metadata = data.metadata
+    data = utils.convert_samples(data)
+    channels = data.shape[1]
+    rms = np.zeros((channels,1))
+
+    # get channel mapping
+    chan_loc = utils.get_channel_locs(probe)
+    chan_map = utils.get_channel_map(probe)
+
+    # calculate Vrms
+    for chan in range(channels):
+        rms[chan] = np.sqrt(np.mean(data[:,chan]**2))
+    #rms_norm = rms/np.max(rms) # normalize for coloring
+    rms_ = rms[chan_map].reshape((187,2))
+    fig, ax = plt.subplots()
+    cmap = plt.colormaps['plasma']
+    im = ax.pcolormesh(rms_,cmap=cmap)
+    ax.set_aspect(0.1)
+    ax.set_title('Probe voltage')
+    ax.set_xlabel('X position (um)')
+    ax.set_ylabel('Y position (um)')
+    fig.colorbar(im)
+    if probe_region != None:
+        ax.set_ylim([probe_region[0],probe_region[1]])
+    plt.show()
+
+def plot_probe_freq(data, probe='1_3A', freq_range=[80.0,100.0], probe_region=None):
+    channels = list(range(384))
+    pxx_mean = np.zeros((len(channels)))
+    f,pxx = spec.psd(data,channels,plot_on=False) # keep plotting off to avoid a nightmare
+    freq_idxs = np.where(np.logical_and(f>=freq_range[0],f<freq_range[1]))
+
+    # get channel mapping
+    chan_loc = utils.get_channel_locs(probe)
+    chan_map = utils.get_channel_map(probe)
+
+    for chan in channels:
+        pxx_ = pxx[chan]/np.max(pxx[chan])
+        pxx_mean[chan] = np.sum(pxx_[freq_idxs])
+
+    pxx_mean_ = pxx_mean[chan_map].reshape((187,2))
+    fig, ax = plt.subplots()
+    cmap = plt.colormaps['plasma']
+    if probe_region != None:
+        im = ax.pcolormesh(pxx_mean_[probe_region[0]:probe_region[1],:],cmap=cmap)
+    else:
+        im = ax.pcolormesh(pxx_mean_, cmap=cmap)
+    ax.set_aspect(0.1)
+    ax.set_title('Probe total power {}Hz:{}Hz'.format(str(freq_range[0]),str(freq_range[1])))
+    ax.set_xlabel('X position (um)')
+    ax.set_ylabel('Y position (um)')
+    fig.colorbar(im)
+    if probe_region != None:
+        ax.set_ylim([probe_region[0],probe_region[1]])
     plt.show()
