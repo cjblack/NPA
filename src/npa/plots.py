@@ -28,7 +28,7 @@ def plot_channels(data, channels, fontsize=8, layout='compressed'):
 
 def plot_probe_rms(data, probe='1_3A', probe_region=None):
     '''
-
+    Plots rms voltage across each electrode position
     :param data:
     :param probe:
     :return:
@@ -59,7 +59,15 @@ def plot_probe_rms(data, probe='1_3A', probe_region=None):
         ax.set_ylim([probe_region[0],probe_region[1]])
     plt.show()
 
-def plot_probe_freq(data, probe='1_3A', freq_range=[80.0,100.0], probe_region=None):
+def plot_probe_freq(data, probe='1_3A', freq_range=[80.0,100.0], probe_region=None, save_fig=None):
+    '''
+    Plots total power in specified frequency band across probe
+    :param data:
+    :param probe:
+    :param freq_range:
+    :param probe_region:
+    :return:
+    '''
     channels = list(range(384))
     pxx_mean = np.zeros((len(channels)))
     f,pxx = spec.psd(data,channels,plot_on=False) # keep plotting off to avoid a nightmare
@@ -87,4 +95,6 @@ def plot_probe_freq(data, probe='1_3A', freq_range=[80.0,100.0], probe_region=No
     fig.colorbar(im)
     if probe_region != None:
         ax.set_ylim([probe_region[0],probe_region[1]])
+    if save_fig != None:
+        plt.savefig(save_fig+'_NP'+probe+'-probe_freq.png')
     plt.show()

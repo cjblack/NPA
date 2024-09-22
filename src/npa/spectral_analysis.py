@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import filters
 import utils
 
-def psd(data, channels, fpass = [0.1, 150.0], plot_on = True):
+def psd(data, channels, fpass = [0.1, 150.0], plot_on = True, save_fig = None):
     '''
     Returns and plots power spectral density for selected channels using welches method
     :param data:
@@ -15,11 +15,11 @@ def psd(data, channels, fpass = [0.1, 150.0], plot_on = True):
     fs = data.metadata['sample_rate']
     type = data.metadata['stream_name']
     num_channels = data.metadata['num_channels']
-    win = 4*fs
     ds_factor = 10 # factor by which to downsample data
     data_ = utils.convert_samples(data) # convert data to voltage
     chan_pxx = list()
     dfs = fs / ds_factor  # set downsampled rate
+    win = 4 * dfs
     # notch filter
     for chan in channels:
         b, a = filters.notch(fs)
@@ -47,5 +47,28 @@ def psd(data, channels, fpass = [0.1, 150.0], plot_on = True):
             ax.set_title('Channel {} Power Spectral Density'.format(chanel[0] + 1))
             ax.set_ylabel('PSD [V**2/Hz]')
             ax.set_xlabel('Frequency (Hz)')
+        if save_fig != None:
+            plt.savefig(save_fig+'_NP_PSD.png')
         plt.show()
     return f, chan_pxx
+
+def spectrogram(data, channels, fpass = [0.1, 150.0]):
+    fs = data.metadata['sample_rate']
+    type = data.metadata['stream_name']
+    num_channels = data.metadata['num_channels']
+    win = 4 * fs
+    ds_factor = 10  # factor by which to downsample data
+    data_ = utils.convert_samples(data)  # convert data to voltage
+    chan_pxx = list()
+    dfs = fs / ds_factor  # set downsampled rate
+    for chan in channels:
+        b, a = filters.notch(fs)
+        filt_data = signal.filtfilt(b, a, data_[:, chan])
+        # bandpass filter
+        b, a = filters.bandpass(fs, [fpass[0], fpass[1]])
+        filt_data = signal.filtfilt(b, a, filt_data)
+
+        # downsample data
+        filt_data = signal.decimate(filt_data, ds_factor)
+
+        #f, t, sxx = signal.spectrogram(filt_data, dfs, nperseg = )
