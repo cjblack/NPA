@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-import utils
+from npa.utils import *
 import numpy as np
 import spectral_analysis as spec
 
@@ -16,7 +16,7 @@ def plot_channels(data, channels, fontsize=8, layout='compressed'):
     fs = metadata['sample_rate']
     timestamps = data.sample_numbers/fs
     timestamps = timestamps - timestamps[0]
-    data = utils.convert_samples(data)
+    data = convert_samples(data)
     fig, ax = plt.subplots(nrows=len(channels), figsize = (5,10), layout=layout)
     for chan in channels:
         ax[chan].plot(timestamps,data[:,chan], color = 'black')
@@ -34,13 +34,13 @@ def plot_probe_rms(data, probe='1_3A', probe_region=None):
     :return:
     '''
     metadata = data.metadata
-    data = utils.convert_samples(data)
+    data = convert_samples(data)
     channels = data.shape[1]
     rms = np.zeros((channels,1))
 
     # get channel mapping
-    chan_loc = utils.get_channel_locs(probe)
-    chan_map = utils.get_channel_map(probe)
+    chan_loc = get_channel_locs(probe)
+    chan_map = get_channel_map(probe)
 
     # calculate Vrms
     for chan in range(channels):
@@ -74,8 +74,8 @@ def plot_probe_freq(data, probe='1_3A', freq_range=[80.0,100.0], probe_region=No
     freq_idxs = np.where(np.logical_and(f>=freq_range[0],f<freq_range[1]))
 
     # get channel mapping
-    chan_loc = utils.get_channel_locs(probe)
-    chan_map = utils.get_channel_map(probe)
+    chan_loc = get_channel_locs(probe)
+    chan_map = get_channel_map(probe)
 
     for chan in channels:
         pxx_ = pxx[chan]/np.max(pxx[chan])

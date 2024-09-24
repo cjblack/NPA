@@ -1,7 +1,7 @@
 from scipy import signal
 import matplotlib.pyplot as plt
 import filters
-import utils
+from npa.utils import *
 
 def psd(data, channels, fpass = [0.1, 150.0], plot_on = True, save_fig = None):
     '''
@@ -16,7 +16,7 @@ def psd(data, channels, fpass = [0.1, 150.0], plot_on = True, save_fig = None):
     type = data.metadata['stream_name']
     num_channels = data.metadata['num_channels']
     ds_factor = 10 # factor by which to downsample data
-    data_ = utils.convert_samples(data) # convert data to voltage
+    data_ = convert_samples(data) # convert data to voltage
     chan_pxx = list()
     dfs = fs / ds_factor  # set downsampled rate
     win = 4 * dfs
@@ -58,7 +58,7 @@ def spectrogram(data, channels, fpass = [0.1, 150.0]):
     num_channels = data.metadata['num_channels']
     win = 4 * fs
     ds_factor = 10  # factor by which to downsample data
-    data_ = utils.convert_samples(data)  # convert data to voltage
+    data_ = convert_samples(data)  # convert data to voltage
     chan_pxx = list()
     dfs = fs / ds_factor  # set downsampled rate
     for chan in channels:
