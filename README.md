@@ -1,6 +1,10 @@
 # NPA
 Neuropixel Analysis tools
 
+## To-do
+* Add comments to plotting
+* Filter for electrodes based on signal property
+
 ## Setup
 ### open ephys tools
 Follow from https://github.com/open-ephys/open-ephys-python-tools
