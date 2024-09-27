@@ -62,10 +62,10 @@ def plot_probe_rms(data, probe='1_3A', probe_region=None):
 def plot_probe_freq(data, probe='1_3A', freq_range=[80.0,100.0], probe_region=None, save_fig=None):
     '''
     Plots total power in specified frequency band across probe
-    :param data:
-    :param probe:
-    :param freq_range:
-    :param probe_region:
+    :param data: open ephys structure
+    :param probe: neuropixel probe version being used
+    :param freq_range: range of frequencies to analyze [float,float]
+    :param probe_region: area of probe to plot [int, int]
     :return:
     '''
     channels = list(range(384))
