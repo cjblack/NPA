@@ -1,7 +1,7 @@
 from scipy import signal
 import matplotlib.pyplot as plt
-import filters
-from npa.utils import *
+import src.npa.filters as filters
+from src.npa.utils import *
 
 def psd(data, channels, fpass = [0.1, 150.0], plot_on = True, save_fig = None):
     '''
@@ -44,7 +44,7 @@ def psd(data, channels, fpass = [0.1, 150.0], plot_on = True, save_fig = None):
         else:
             fig, ax = plt.subplots()
             ax.semilogy(f,chan_pxx[channels[0]],color = 'black', linewidth = 2)
-            ax.set_title('Channel {} Power Spectral Density'.format(chanel[0] + 1))
+            ax.set_title('Channel {} Power Spectral Density'.format(channels[0] + 1))
             ax.set_ylabel('PSD [V**2/Hz]')
             ax.set_xlabel('Frequency (Hz)')
         if save_fig != None:

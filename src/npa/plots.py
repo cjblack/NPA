@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
-from npa.utils import *
+from src.npa.utils import *
 import numpy as np
-import spectral_analysis as spec
+import src.npa.spectral_analysis as spec
 
 def plot_channels(data, channels, fontsize=8, layout='compressed'):
     '''
