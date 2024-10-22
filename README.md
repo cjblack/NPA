@@ -21,6 +21,7 @@ $ pip install open-ephys-python-tools
 `
 
 ## Usage
+### Loading data
 ```
 directory = 'location/of/neuropix/data'
 
@@ -35,5 +36,15 @@ lfp_metadata = lfp.metadata
 ap = get_spike_data(directory)
 ap_samples = ap.samples
 ap_metadata = ap.metadata
+```
+
+### Plotting frequency response
+```
+directory = 'location/of/neuropix/data' # set directory of neuropixel data
+from src.npa.utils import *
+from src.npa.plots import *
+
+lfp = get_lfp_data(directory) # load data
+plot_probe_freq(lfp, probe_region=[0,75]) #  plots first 76 electrodes
 
 ```
