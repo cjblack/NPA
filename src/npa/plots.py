@@ -28,6 +28,15 @@ def plot_channels_separate(data, channels, fontsize=8, layout='compressed'):
     plt.show()
 
 def plot_channels_together(data, channels, v_factor=100):
+    """
+    Plots LFP channels on the same plot, spaced by a scaling factor
+    :param data: open ephys object, lfp data
+    :param channels: list, range of channels to plot
+    :param v_factor: int, factor to shift channels so they don't stack on top of each other
+    :return:
+    Use:
+    >>>plot_channels_together(lfp, range(0,100))
+    """
     metadata = data.metadata
     fs = metadata['sample_rate']
     timestamps = data.sample_numbers/fs
@@ -46,10 +55,10 @@ def plot_channels_together(data, channels, v_factor=100):
 def plot_channels_epoch(data, channels, event_time, v_factor = 100):
     """
     Plot channels with respect to event time...
-    :param data: lfp data
-    :param channels: range of channels to plot in list
-    :param event_time: time in seconds of when 'event' occured
-    :param v_factor: scaling factor for plotting channels on same axis
+    :param data: open ephys object, lfp data
+    :param channels: list, range of channels to plot
+    :param event_time: float, time in seconds of when 'event' occured
+    :param v_factor: int, factor to shift channels so they don't stack on top of each other
     :return:
     Use:
     >>>plot_channels_epoch(lfp,range(0,100),4.5)
@@ -75,7 +84,7 @@ def plot_channels_epoch(data, channels, event_time, v_factor = 100):
 def plot_power_spectra(data, channel, save_dir=None):
     """
     Plots power spectral density using the welch method
-    :param data: open ephys lfp data object
+    :param data: open ephys object, lfp data
     :param channel: channel index to plot
     :param save_dir: directory to save data in string format if desired
     :return:

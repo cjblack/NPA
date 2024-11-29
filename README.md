@@ -51,3 +51,24 @@ lfp = get_lfp_data(directory) # load data
 plot_probe_freq(lfp, probe_region=[0,75]) #  plots first 76 electrodes
 
 ```
+### Plotting single channel spectrogram
+```
+directory = 'location/of/neuropix/data' # set directory of neuropixel data
+from src.npa.utils import *
+from src.npa.plots import *
+# to plot the first channel (i.e. channel 1 at index 0)
+
+lfp = get_lfp_data(directory) # load data
+t, f, mwt = plot_spectrogram(lfp, 0) # plot the spectrogram for the first channel and get the time and frequency vectors, and morlet wavelet transform in return
+
+```
+### Plotting LFP channels together
+```
+directory = 'location/of/neuropix/data' # set directory of neuropixel data
+from src.npa.utils import *
+from src.npa.plots import *
+
+
+lfp = get_lfp_data(directory) # load the data
+f, pxx = plot_channels_together(lfp,range(0,20)) # plot the first 20 channels and get the frequency vector and psd vector in return
+```
