@@ -27,7 +27,7 @@ def plot_channels_separate(data, channels, fontsize=8, layout='compressed'):
     fig.tight_layout()
     plt.show()
 
-def plot_channels_together(data, channels, v_factor=100):
+def plot_channels_together(data, channels, v_factor=100, save_dir = None):
     """
     Plots LFP channels on the same plot, spaced by a scaling factor
     :param data: open ephys object, lfp data
@@ -50,6 +50,8 @@ def plot_channels_together(data, channels, v_factor=100):
         fsig = filters.bandpass_filter_data(fsig, fs, fpass=[0.1, 150.0])
         plt.plot(timestamps, fsig+(chan*v_factor), color=colors[i])
     plt.xlabel('Time (s)')
+    if save_dir != None:
+        plt.savefig(save_dir+'/'+'lfp_channels_n_{}.pdf'.format(len(channels)))
     plt.show()
 
 def plot_channels_epoch(data, channels, event_time, v_factor = 100):
@@ -105,9 +107,9 @@ def plot_power_spectra(data, channel, save_dir=None):
     plt.ylabel('PSD (uV^2/Hz)')
     plt.title('Channel {} PSD'.format(channel+1))
     if save_dir != None:
-        plt.savefig(save_dir+'/'+'channel_{}_psd.pdf'.format(channel+1))
+        plt.savefig(save_dir+'/'+'psd_channel_{}.pdf'.format(channel))
     plt.show()
-def plot_spectrogram(data, channel, x_ticks=5, y_ticks=5):
+def plot_spectrogram(data, channel, x_ticks=5, y_ticks=5, save_dir = None):
     """
     Plots spectrogram of LFP and filtered LFP trace using morlet wavelet
     :param data:
@@ -153,6 +155,8 @@ def plot_spectrogram(data, channel, x_ticks=5, y_ticks=5):
     ax[1].set_xlabel('Time (s)')
     ax[1].set_ylabel('Voltage (uV)')
     fig.suptitle('Channel {} Spectrogram'.format(channel+1))
+    if save_dir != None:
+        plt.savefig(save_dir+'/'+'spectrogram_channel_{}.pdf'.format(channel))
     plt.show()
 
     return t, f, mwt
