@@ -16,14 +16,15 @@ conda activate NPA
 ```
 2. Install Open Ephys python tools
 
-`
+```
 $ pip install open-ephys-python-tools
-`
+```
+
 3. Install neurodsp
 
-`
+```
 $ pip install neurodsp
-`
+```
 ## Usage
 ### Loading data
 ```
