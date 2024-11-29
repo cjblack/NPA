@@ -21,8 +21,9 @@ $ pip install open-ephys-python-tools
 `
 3. Install neurodsp
 
+`
 $ pip install neurodsp
-
+`
 ## Usage
 ### Loading data
 ```
