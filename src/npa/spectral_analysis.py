@@ -3,11 +3,12 @@ import matplotlib.pyplot as plt
 import src.npa.filters as filters
 from src.npa.utils import *
 
-def psd(data, channels, fpass = [0.1, 150.0], plot_on = True, save_fig = None):
+def psd(data, channels, time_range = None,fpass = [0.1, 150.0], plot_on = True, save_fig = None):
     '''
     Returns and plots power spectral density for selected channels using welches method
     :param data:
     :param channels:
+    :param time_range: time range in seconds [0,X]
     :param fpass:
     :param plot_on:
     :return:
@@ -19,6 +20,13 @@ def psd(data, channels, fpass = [0.1, 150.0], plot_on = True, save_fig = None):
     data_ = convert_samples(data) # convert data to voltage
     chan_pxx = list()
     dfs = fs / ds_factor  # set downsampled rate
+    if time_range == None:
+        time_range=[0,-1]
+        data_ = data_[:,:]
+    else:
+        time_range = [int(time_range[0]*fs),int(time_range[1]*fs)]
+        data_ = data_[time_range[0]:time_range[1],:]
+    print(data_.shape)
     win = 4 * dfs
     # notch filter
     for chan in channels:
@@ -52,13 +60,19 @@ def psd(data, channels, fpass = [0.1, 150.0], plot_on = True, save_fig = None):
         plt.show()
     return f, chan_pxx
 
-def spectrogram(data, channels, fpass = [0.1, 150.0]):
+def spectrogram(data, channels, time_range = None, fpass = [0.1, 150.0]):
     fs = data.metadata['sample_rate']
     type = data.metadata['stream_name']
     num_channels = data.metadata['num_channels']
     win = 4 * fs
     ds_factor = 10  # factor by which to downsample data
     data_ = convert_samples(data)  # convert data to voltage
+    if time_range == None:
+        time_range=[0,-1]
+        data_ = data_[:,:]
+    else:
+        time_range = [int(time_range[0]*fs),int(time_range[1]*fs)]
+        data_ = data_[time_range[0]:time_range[1],:]
     chan_pxx = list()
     dfs = fs / ds_factor  # set downsampled rate
     for chan in channels:

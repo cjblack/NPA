@@ -59,7 +59,7 @@ def plot_probe_rms(data, probe='1_3A', probe_region=None):
         ax.set_ylim([probe_region[0],probe_region[1]])
     plt.show()
 
-def plot_probe_freq(data, probe='1_3A', freq_range=[80.0,100.0], probe_region=None, save_fig=None):
+def plot_probe_freq(data, probe='1_3A', time_range=None,freq_range=[80.0,100.0], probe_region=None, save_fig=None):
     '''
     Plots total power in specified frequency band across probe
     :param data: open ephys structure
@@ -70,7 +70,7 @@ def plot_probe_freq(data, probe='1_3A', freq_range=[80.0,100.0], probe_region=No
     '''
     channels = list(range(384))
     pxx_mean = np.zeros((len(channels)))
-    f,pxx = spec.psd(data,channels,plot_on=False) # keep plotting off to avoid a nightmare
+    f,pxx = spec.psd(data,channels,time_range=time_range,plot_on=False) # keep plotting off to avoid a nightmare
     freq_idxs = np.where(np.logical_and(f>=freq_range[0],f<freq_range[1]))
 
     # get channel mapping
