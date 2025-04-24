@@ -1,9 +1,21 @@
+import numpy as np
 from scipy import signal
 import matplotlib.pyplot as plt
 import src.npa.filters as filters
 from src.npa.utils import *
 
+<<<<<<< HEAD
 def psd(data, channels, time_range = None,fpass = [0.1, 150.0], plot_on = True, save_fig = None):
+=======
+from neurodsp.sim import sim_combined
+from neurodsp.plts import plot_time_series, plot_timefrequency
+from neurodsp.utils import create_times
+
+# Import function for Morlet Wavelets
+from neurodsp.timefrequency.wavelets import compute_wavelet_transform
+from neurodsp.spectral import compute_spectrum, rotate_powerlaw
+def psd(data, channels, fpass = [0.1, 150.0], plot_on = True, save_fig = None):
+>>>>>>> c6a091a113ae81f1e9ae290e1223bc999bc5385d
     '''
     Returns and plots power spectral density for selected channels using welches method
     :param data:
@@ -85,4 +97,33 @@ def spectrogram(data, channels, time_range = None, fpass = [0.1, 150.0]):
         # downsample data
         filt_data = signal.decimate(filt_data, ds_factor)
 
-        #f, t, sxx = signal.spectrogram(filt_data, dfs, nperseg = )
+        f, t, sxx = signal.spectrogram(filt_data, dfs, nperseg=1024) #, nperseg = ) # use pcolormesh
+    return f, t, sxx
+
+def welch_spectrum(data, channel, fpass = [0.1, 150.0]):
+    fs = data.metadata['sample_rate'] # get sampling rate
+    channels = convert_samples(data) # convert to microvolts
+    chan = channels[:,channel] # get channel data vector
+    # filter data
+    b, a = filters.notch(fs)
+    filt_data = signal.filtfilt(b, a, chan)
+    b, a = filters.bandpass(fs, [fpass[0], fpass[1]])
+    filt_data = signal.filtfilt(b, a, filt_data)
+
+    freq_mean, psd_mean = compute_spectrum(filt_data, fs, method='welch', avg_type='mean', nperseg=fs*2)
+    return freq_mean, psd_mean
+def morlet_wavelet(data, channel, fpass = [0.1, 150.0],freq_vec=[5,100,50], n_cycles=7, plot_fig=True):
+    fs = data.metadata['sample_rate'] # get sampling rate
+    channels = convert_samples(data) # convert to microvolts
+    chan = channels[:,channel] # get channel data vector
+    # filter data
+    b, a = filters.notch(fs)
+    filt_data = signal.filtfilt(b, a, chan)
+    b, a = filters.bandpass(fs, [fpass[0], fpass[1]])
+    filt_data = signal.filtfilt(b, a, filt_data)
+
+    freqs = np.linspace(freq_vec[0],freq_vec[1],freq_vec[2]) # set frequency vector
+    ts = np.linspace(0,len(filt_data)/fs,len(filt_data))
+    mwt = compute_wavelet_transform(filt_data,fs=fs,n_cycles=n_cycles, freqs=freqs)
+    return freqs, ts, mwt, filt_data
+

@@ -2,8 +2,9 @@ import matplotlib.pyplot as plt
 from src.npa.utils import *
 import numpy as np
 import src.npa.spectral_analysis as spec
+import src.npa.filters as filters
 
-def plot_channels(data, channels, fontsize=8, layout='compressed'):
+def plot_channels_separate(data, channels, fontsize=8, layout='compressed'):
     '''
     Basic plotting for data channels
     :param data:
@@ -18,14 +19,147 @@ def plot_channels(data, channels, fontsize=8, layout='compressed'):
     timestamps = timestamps - timestamps[0]
     data = convert_samples(data)
     fig, ax = plt.subplots(nrows=len(channels), figsize = (5,10), layout=layout)
-    for chan in channels:
-        ax[chan].plot(timestamps,data[:,chan], color = 'black')
-        ax[chan].set_title('Chan {}'.format(chan+1), fontsize=fontsize)
-        ax[chan].set_ylabel('uV', fontsize=fontsize)
-        ax[chan].set_xlabel('Time (s)', fontsize=fontsize)
+    for i, chan in enumerate(channels):
+        ax[i].plot(timestamps,data[:,chan], color = 'black')
+        ax[i].set_title('Chan {}'.format(chan+1), fontsize=fontsize)
+        ax[i].set_ylabel('uV', fontsize=fontsize)
+        ax[i].set_xlabel('Time (s)', fontsize=fontsize)
     fig.tight_layout()
     plt.show()
 
+def plot_channels_together(data, channels, v_factor=100, save_dir = None):
+    """
+    Plots LFP channels on the same plot, spaced by a scaling factor
+    :param data: open ephys object, lfp data
+    :param channels: list, range of channels to plot
+    :param v_factor: int, factor to shift channels so they don't stack on top of each other
+    :return:
+    Use:
+    >>>plot_channels_together(lfp, range(0,100))
+    """
+    metadata = data.metadata
+    fs = metadata['sample_rate']
+    timestamps = data.sample_numbers/fs
+    timestamps = timestamps - timestamps[0]
+    data = convert_samples(data)
+    n = len(channels)
+    colors = plt.cm.plasma(np.linspace(0,1,n))
+    for i, chan in enumerate(channels):
+        sig = data[:,chan]
+        fsig = filters.notch_filter_data(sig, fs)
+        fsig = filters.bandpass_filter_data(fsig, fs, fpass=[0.1, 150.0])
+        plt.plot(timestamps, fsig+(chan*v_factor), color=colors[i])
+    plt.xlabel('Time (s)')
+    if save_dir != None:
+        plt.savefig(save_dir+'/'+'lfp_channels_n_{}.pdf'.format(len(channels)))
+    plt.show()
+
+def plot_channels_epoch(data, channels, event_time, v_factor = 100):
+    """
+    Plot channels with respect to event time...
+    :param data: open ephys object, lfp data
+    :param channels: list, range of channels to plot
+    :param event_time: float, time in seconds of when 'event' occured
+    :param v_factor: int, factor to shift channels so they don't stack on top of each other
+    :return:
+    Use:
+    >>>plot_channels_epoch(lfp,range(0,100),4.5)
+    """
+    metadata = data.metadata
+    fs = metadata['sample_rate']
+    timestamps = data.sample_numbers/fs
+    timestamps = timestamps - timestamps[0]
+    event_idx = np.where((abs(timestamps-event_time))==np.min(abs(timestamps-event_time)))
+    tpre = event_idx[0]-fs # 1 second pre
+    tpost = event_idx[0]+fs # 1 secont post
+    data = convert_samples(data)
+    n = len(channels)
+    colors = plt.cm.plasma(np.linspace(0,1,n))
+    for i, chan in enumerate(channels):
+        sig = data[:,chan]
+        fsig = filters.notch_filter_data(sig, fs)
+        fsig = filters.bandpass_filter_data(fsig, fs, fpass=[0.1, 150.0])
+        plt.plot(timestamps[int(tpre):int(tpost)], fsig[int(tpre):int(tpost)]+(chan*v_factor), color=colors[i])
+    plt.xlabel('Time (s)')
+    plt.show()
+
+def plot_power_spectra(data, channel, save_dir=None):
+    """
+    Plots power spectral density using the welch method
+    :param data: open ephys object, lfp data
+    :param channel: channel index to plot
+    :param save_dir: directory to save data in string format if desired
+    :return:
+    Use:
+    For not saving figure...
+    >>>plot_power_spectra(lfp,0)
+    For saving figure...
+    >>>plot_power_spectra(lfp,0,save_dir='location/to/save/file')
+    """
+    name = data.name.split('/')[0]
+    type = name.split('-')[-1]
+    if type != 'LFP':
+        raise TypeError('Use only LFP data types.')
+    f, pxx = spec.welch_spectrum(data, channel)
+    plt.plot(f,pxx)
+    plt.xlim([0,100])
+    plt.xlabel('Frequency (Hz)')
+    plt.ylabel('PSD (uV^2/Hz)')
+    plt.title('Channel {} PSD'.format(channel+1))
+    if save_dir != None:
+        plt.savefig(save_dir+'/'+'psd_channel_{}.pdf'.format(channel))
+    plt.show()
+def plot_spectrogram(data, channel, x_ticks=5, y_ticks=5, save_dir = None):
+    """
+    Plots spectrogram of LFP and filtered LFP trace using morlet wavelet
+    :param data:
+    :param channel:
+    :param x_ticks:
+    :param y_ticks:
+    :return: t, f, mwt: time (t) and frequency (f) vectors, as well as morlet wavelet transform (mwt)
+    Use:
+    >>> t, f, mwt = plot_spectrogram(lfp, 0)
+    """
+    # Partially adapted from neurodsp
+    # first check that this is LFP data:
+    name = data.name.split('/')[0]
+    type = name.split('-')[-1]
+    if type != 'LFP':
+        raise TypeError('Use only LFP data types.')
+    f, t, mwt, sig = spec.morlet_wavelet(data,channel)
+    if np.iscomplexobj(mwt):
+        powers = abs(mwt)
+    fig, ax = plt.subplots(nrows=2, layout='compressed')
+    pos = ax[0].imshow(powers,aspect='auto')
+    ax[0].invert_yaxis()
+    ax[0].set_xlabel('Time (s)')
+    ax[0].set_ylabel('Frequency (Hz)')
+    fig.colorbar(pos, ax = ax[0])
+    if isinstance(x_ticks, int):
+        x_tick_pos = np.linspace(0, t.size, x_ticks)
+        x_ticks = np.round(np.linspace(t[0], t[-1], x_ticks), 2)
+    else:
+        x_tick_pos = [np.argmin(np.abs(t - val)) for val in x_ticks]
+        ax[0].set(xticks=x_tick_pos, xticklabels=x_ticks)
+    ax[0].set(xticks=x_tick_pos, xticklabels=x_ticks)
+
+    if isinstance(y_ticks, int):
+        y_ticks_pos = np.linspace(0, f.size, y_ticks)
+        y_ticks = np.round(np.linspace(f[0], f[-1], y_ticks), 2)
+    else:
+        y_ticks_pos = [np.argmin(np.abs(f - val)) for val in y_ticks]
+        ax[0].set(yticks=y_ticks_pos, yticklabels=y_ticks)
+    ax[0].set(yticks=y_ticks_pos, yticklabels=y_ticks)
+
+    ax[1].plot(t,sig)
+    ax[1].set_xlabel('Time (s)')
+    ax[1].set_ylabel('Voltage (uV)')
+    fig.suptitle('Channel {} Spectrogram'.format(channel+1))
+    if save_dir != None:
+        plt.savefig(save_dir+'/'+'spectrogram_channel_{}.pdf'.format(channel))
+    plt.show()
+
+    return t, f, mwt
 def plot_probe_rms(data, probe='1_3A', probe_region=None):
     '''
     Plots rms voltage across each electrode position
